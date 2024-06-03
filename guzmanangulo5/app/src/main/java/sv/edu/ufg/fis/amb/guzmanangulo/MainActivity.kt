@@ -27,6 +27,8 @@ class MainActivity : AppCompatActivity() {
         editText = findViewById(R.id.editText)
         buttonSave = findViewById(R.id.buttonSave)
 
+        createInitialFiles() // Crear los archivos al iniciar la app
+
         buttonSave.setOnClickListener {
             val text = editText.text.toString()
             if (text.isNotEmpty()) {
@@ -54,6 +56,34 @@ class MainActivity : AppCompatActivity() {
                 }
             } else {
                 Toast.makeText(this, "Ingrese un texto antes de guardar", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun createInitialFiles() {
+        // Crear archivo en almacenamiento interno
+        val fileNameInternal = "archivo_inicial_interno.txt"
+        val fileInternal = File(filesDir, fileNameInternal)
+        try {
+            FileOutputStream(fileInternal, true).use { fos ->
+                fos.write("Archivo inicial en memoria interna\n".toByteArray())
+            }
+            Toast.makeText(this, "Archivo inicial creado en memoria interna", Toast.LENGTH_SHORT).show()
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+
+        // Crear archivo en almacenamiento externo
+        val fileNameExternal = "archivo_inicial_externo.txt"
+        if (isExternalStorageWritable() && checkPermission()) {
+            val fileExternal = File(getExternalFilesDir(null), fileNameExternal)
+            try {
+                FileOutputStream(fileExternal, true).use { fos ->
+                    fos.write("Archivo inicial en memoria externa\n".toByteArray())
+                }
+                Toast.makeText(this, "Archivo inicial creado en memoria externa", Toast.LENGTH_SHORT).show()
+            } catch (e: IOException) {
+                e.printStackTrace()
             }
         }
     }
@@ -105,6 +135,7 @@ class MainActivity : AppCompatActivity() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == 1) {
             if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                createInitialFiles() // Crear los archivos si el permiso es concedido
                 buttonSave.performClick()
             } else {
                 Toast.makeText(this, "Permiso denegado", Toast.LENGTH_SHORT).show()
